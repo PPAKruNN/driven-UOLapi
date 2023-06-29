@@ -18,7 +18,9 @@ console.log("Servidor iniciado na porta 5000");
 //
 
 app.get("/participants", (req, res) => {
-
+    db.collection("participants").find().toArray()
+        .then( curr => res.send(curr))
+        .catch( err => res.sendStatus(500));
 })
 
 app.post("/participants", async (req, res) => {

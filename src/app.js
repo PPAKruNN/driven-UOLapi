@@ -28,8 +28,11 @@ app.post("/participants", async (req, res) => {
     // validations
 
     try {
-        const participantsArray = await db.collection("participants").find({"name": name}).toArray();
-        if(participantsArray.length !== 0) return res.sendStatus(409);
+        const participants = await db.collection("participants").find({"name": name});
+        if(participants) {
+            const participantsArray = await participants.toArray();
+            if(participantsArray.length !== 0) return res.sendStatus(409);
+        }
 
         db.collection("participants").insertOne({
             name,
@@ -53,7 +56,7 @@ app.post("/participants", async (req, res) => {
 })
 
 app.get("/messages", (req, res) => {
-    
+
 })
 
 app.post("/messages", (req, res) => {

@@ -2,6 +2,7 @@ import Express from 'express';
 import 'dotenv/config'
 import { MongoClient } from 'mongodb';
 import dayjs from 'dayjs';
+import joi from 'joi';
 
 const app = Express();
 app.use(Express.json());
@@ -25,7 +26,13 @@ app.get("/participants", (req, res) => {
 
 app.post("/participants", async (req, res) => {
     const { name } = req.body;
-    // validations
+
+    const userSchema = joi.object({
+        name: joi.string().trim().required(),
+    })
+
+    const validate = userSchema.validate( { name: name } );
+    if(validate.error) return res.send(422);
 
     try {
         const participants = await db.collection("participants").find({"name": name});
@@ -51,7 +58,6 @@ app.post("/participants", async (req, res) => {
 
     } catch (error) {
         res.sendStatus(500);
-        console.log(error.message);
     }
 })
 

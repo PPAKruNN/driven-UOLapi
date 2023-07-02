@@ -31,7 +31,7 @@ app.post("/participants", async (req, res) => {
         name: joi.string().trim().required(),
     })
 
-    const validate = userSchema.validate( { name: name } );
+    const validate = userSchema.validate({ name: name });
     if(validate.error) return res.send(422);
 
     try {
@@ -65,8 +65,33 @@ app.get("/messages", (req, res) => {
 
 })
 
-app.post("/messages", (req, res) => {
+app.post("/messages", async (req, res) => {
     
+    const { to, text, type } = req.body;  
+    const { user } = req.headers;
+
+    const messageSchema = joi.object({
+        to: joi.string().trim().required(),
+        text: joi.string().trim().required(),
+        type: joi.string().allow("message", "private_message").required(),
+        from: joi.string().trim().required(),
+        time: joi.any()
+    });
+    
+    const data = {
+        to, text, type, from: user, time: dayjs().format("HH:mm:ss")
+    }
+    
+    const validate = messageSchema.validate(data);
+    if(validate.error) return res.sendStatus(422);
+    
+    const userSearch = await db.collection("participants").findOne({ name: data.from })
+    if(!userSearch) return res.sendStatus(422);
+    
+    // Everything ok, adding message!
+    db.collection("messages").insertOne(data);
+    return res.sendStatus(201);
+
 })
 
 app.post("/status", (req, res) => {

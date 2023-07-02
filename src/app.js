@@ -113,7 +113,18 @@ app.post("/messages", async (req, res) => {
 })
 
 app.post("/status", (req, res) => {
+    const { user } = req.headers;
+    if(!user) return res.sendStatus(404);
+
+    const userSearch = db.collection("participants").find({name: user});
+    if(!userSearch) return res.sendStatus(404);
     
+    const updateResponse = db.collection("participants").updateOne(
+        {name: user},
+        {$set: {lastStatus: Date.now()}
+    });
+    if(!updateResponse) return res.sendStatus(404);
+    return res.sendStatus(200);
 })
 
 app.delete("/messages/:ID", (req, res) => {

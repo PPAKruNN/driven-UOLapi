@@ -66,7 +66,6 @@ app.get("/messages", async (req, res) => {
     const { limit } = req.query;
 
     // Driven nao pediu pra verificar o header??????
-
     if(limit && parseInt(limit) <= 0) return res.sendStatus(422);
 
     const messageSearch = await db.collection("messages").find({ 
@@ -76,7 +75,7 @@ app.get("/messages", async (req, res) => {
             {from: user},
             {to: user}
         ] 
-    }).limit(limit ?? 0).toArray();
+    }).limit(limit ? parseInt(limit) : 0).toArray();
     //limit ?? 0 eh pra ignorar o limite caso seja undefined, mas usar o limite se ele existir.
 
     if(!messageSearch) return res.sendStatus(404);

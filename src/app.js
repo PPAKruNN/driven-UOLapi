@@ -127,13 +127,11 @@ app.post("/status", (req, res) => {
     return res.sendStatus(200);
 })
 
-app.delete("/messages/:ID", (req, res) => {
-    
-})
+// app.delete("/messages/:ID", (req, res) => {
+//})
 
-app.put("/messages/:ID", (req, res) => {
-    
-})
+//app.put("/messages/:ID", (req, res) => {  
+//})
 
 setInterval( async () => {
     const afkSearch = await db.collection("participants").find({lastStatus: { $lt: Date.now() - 10000} }).toArray();

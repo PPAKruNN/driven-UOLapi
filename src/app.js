@@ -41,12 +41,12 @@ app.post("/participants", async (req, res) => {
             if(participantsArray.length !== 0) return res.sendStatus(409);
         }
 
-        db.collection("participants").insertOne({
+        await db.collection("participants").insertOne({
             name,
             lastStatus: Date.now()
         });
 
-        db.collection("messages").insertOne({
+        await db.collection("messages").insertOne({
             from: name,
             to: "Todos",
             text: "entra na sala...",
@@ -107,19 +107,19 @@ app.post("/messages", async (req, res) => {
     if(!userSearch) return res.sendStatus(422);
     
     // Everything ok, adding message!
-    db.collection("messages").insertOne(data);
+    await db.collection("messages").insertOne(data);
     return res.sendStatus(201);
 
 })
 
-app.post("/status", (req, res) => {
+app.post("/status", async (req, res) => {
     const { user } = req.headers;
     if(!user) return res.sendStatus(404);
 
-    const userSearch = db.collection("participants").find({name: user});
+    const userSearch = await db.collection("participants").find({name: user});
     if(!userSearch) return res.sendStatus(404);
     
-    const updateResponse = db.collection("participants").updateOne(
+    const updateResponse = await db.collection("participants").updateOne(
         {name: user},
         {$set: {lastStatus: Date.now()}
     });
@@ -140,11 +140,11 @@ setInterval( async () => {
         
         console.log("Cleaning AFK participants: ", dayjs().format("HH:mm:ss"));
         
-        afkSearch.forEach( curr => {
+        afkSearch.forEach( async (curr) => {
             console.log(` - Removing ${curr.name}, (ID: ${curr._id}) from the room.`)
-            db.collection("participants").deleteOne({_id: new ObjectId(curr._id)});
+            await db.collection("participants").deleteOne({_id: new ObjectId(curr._id)});
             
-            db.collection("messages").insertOne({
+            await db.collection("messages").insertOne({
                 from: curr.name, 
                 to: "Todos", 
                 text: "sai da sala...",

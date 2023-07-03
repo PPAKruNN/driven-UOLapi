@@ -66,7 +66,7 @@ app.get("/messages", async (req, res) => {
     const { limit } = req.query;
 
     // Driven nao pediu pra verificar o header??????
-    if(limit && parseInt(limit) <= 0) return res.sendStatus(422);
+    if(!limit || isNaN(parseInt(limit)) || parseInt(limit) <= 0) return res.sendStatus(422);
 
     const messageSearch = await db.collection("messages").find({ 
         $or: [
@@ -115,9 +115,9 @@ app.post("/status", async (req, res) => {
     const { user } = req.headers;
     if(!user) return res.sendStatus(404);
 
-    const userSearch = await db.collection("participants").find({name: user});
+    const userSearch = await db.collection("participants").findOne({name: user});
     if(!userSearch) return res.sendStatus(404);
-    
+
     const updateResponse = await db.collection("participants").updateOne(
         {name: user},
         {$set: {lastStatus: Date.now()}

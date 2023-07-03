@@ -1,6 +1,6 @@
 import Express from 'express';
 import 'dotenv/config'
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import dayjs from 'dayjs';
 import joi from 'joi';
 
@@ -134,3 +134,25 @@ app.delete("/messages/:ID", (req, res) => {
 app.put("/messages/:ID", (req, res) => {
     
 })
+
+setInterval( async () => {
+    const afkSearch = await db.collection("participants").find({lastStatus: { $lt: Date.now() - 10000} }).toArray();
+
+    if(afkSearch.length > 0) {
+        
+        console.log("Cleaning AFK participants: ", dayjs().format("HH:mm:ss"));
+        
+        afkSearch.forEach( curr => {
+            console.log(` - Removing ${curr.name}, (ID: ${curr._id}) from the room.`)
+            db.collection("participants").deleteOne({_id: new ObjectId(curr._id)});
+            
+            db.collection("messages").insertOne({
+                from: curr.name, 
+                to: "Todos", 
+                text: "sai da sala...",
+                type: "status",
+                time:  dayjs().format("HH:mm:ss")
+            })
+        })
+    }
+}, 15000);
